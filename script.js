@@ -1151,9 +1151,39 @@ function initUI() {
   } else panels.forEach((p) => p.classList.add("active"));
 }
 
+/* ---------------- chapter navigation ---------------- */
+function initChapterNav() {
+  const nav = document.getElementById("chapterNav");
+  if (!nav) return;
+  const scenes = [...document.querySelectorAll("main .scene")];
+  const labels = ["Intro", "What it is", "Origins", "Event horizon", "Disk of fire",
+    "Anatomy", "The experiment", "Scale", "Fall in", "Collision", "The long goodbye", "Catalog", "Fin"];
+  const dots = scenes.map((sc, i) => {
+    const b = document.createElement("button");
+    b.className = "chapter-dot";
+    b.setAttribute("aria-label", labels[i] || "Section " + (i + 1));
+    b.innerHTML = `<span class="lbl">${labels[i] || ""}</span>`;
+    b.addEventListener("click", () => sc.scrollIntoView({ behavior: "smooth", block: "start" }));
+    nav.appendChild(b);
+    return b;
+  });
+  if ("IntersectionObserver" in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          const idx = scenes.indexOf(e.target);
+          dots.forEach((d, i) => d.classList.toggle("active", i === idx));
+        }
+      });
+    }, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
+    scenes.forEach((s) => io.observe(s));
+  } else dots[0].classList.add("active");
+}
+
 /* ---------------- boot ---------------- */
 function boot() {
   initUI();
+  initChapterNav();
   let background = null;
   try {
     background = createBlackHole(document.getElementById("stage"), {
@@ -1173,6 +1203,8 @@ function boot() {
   initHawking();
   initDive(background);
   initMerger(background);
+  // let the first frame paint, then lift the loader
+  setTimeout(() => window.__ready && window.__ready(), 350);
 }
 
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);

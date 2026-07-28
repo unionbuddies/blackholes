@@ -40,6 +40,48 @@ body.locked { overflow: hidden; }
   background: var(--white); opacity: 0.8; z-index: 40; transition: width 0.1s linear;
 }
 
+/* ---------- Chapter navigation ---------- */
+.chapter-nav {
+  position: fixed; right: 16px; top: 50%; transform: translateY(-50%);
+  z-index: 45; display: flex; flex-direction: column; gap: 11px; align-items: flex-end;
+}
+.chapter-dot {
+  position: relative; width: 9px; height: 9px; padding: 0; border: none; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4); cursor: pointer; transition: background 0.25s, transform 0.25s;
+}
+.chapter-dot:hover { background: rgba(255, 255, 255, 0.7); }
+.chapter-dot.active { background: #fff; transform: scale(1.55); }
+.chapter-dot .lbl {
+  position: absolute; right: 18px; top: 50%; transform: translateY(-50%); white-space: nowrap;
+  font-size: 0.72rem; letter-spacing: 0.02em; color: var(--white);
+  background: rgba(0, 0, 0, 0.6); padding: 3px 9px; border-radius: 5px; backdrop-filter: blur(4px);
+  opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.chapter-dot:hover .lbl { opacity: 1; }
+
+/* ---------- Loader ---------- */
+.loader {
+  position: fixed; inset: 0; z-index: 200; background: #000;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.4rem;
+  transition: opacity 0.6s ease;
+}
+.loader.hide { opacity: 0; pointer-events: none; }
+.loader-orb {
+  width: 46px; height: 46px; border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, #000 46%, rgba(255, 175, 90, 0.9) 52%, rgba(255, 175, 90, 0) 74%);
+  animation: orbspin 1.4s linear infinite;
+}
+.loader-text { font-size: 0.76rem; letter-spacing: 0.28em; text-transform: uppercase; color: var(--faint); }
+@keyframes orbspin { to { transform: rotate(360deg); } }
+
+body.force-reveal .panel { opacity: 1 !important; transform: none !important; }
+
+@media (max-width: 640px) {
+  .chapter-nav { right: 10px; gap: 9px; }
+  .chapter-dot { width: 8px; height: 8px; }
+  .chapter-dot .lbl { display: none; }
+}
+
 /* ============ SCENES ============ */
 main { position: relative; z-index: 2; }
 .scene {

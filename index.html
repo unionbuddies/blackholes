@@ -16,6 +16,23 @@
   <div class="vignette" aria-hidden="true"></div>
   <div class="scroll-progress" id="scrollProgress"></div>
 
+  <!-- Chapter navigation (dots injected by script.js) -->
+  <nav class="chapter-nav" id="chapterNav" aria-label="Chapters"></nav>
+
+  <!-- Loading state until the 3D is ready -->
+  <div class="loader" id="loader"><div class="loader-orb"></div><span class="loader-text">entering orbit…</span></div>
+  <script>
+    (function () {
+      function ready() {
+        var l = document.getElementById("loader");
+        if (l) { l.classList.add("hide"); setTimeout(function () { if (l.parentNode) l.parentNode.removeChild(l); }, 700); }
+      }
+      window.__ready = ready;
+      // failsafe: if the 3D module never loads (e.g. CDN blocked), still reveal the page
+      setTimeout(function () { document.body.classList.add("force-reveal"); ready(); }, 9000);
+    })();
+  </script>
+
   <main>
     <!-- 01 · INTRO -->
     <section class="scene scene--center" data-scene="0">

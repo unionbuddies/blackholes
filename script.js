@@ -192,12 +192,15 @@ function createBlackHole(canvas, opts = {}) {
 /* ---------------- scroll keyframes (purposeful camera) ---------------- */
 const KEYS = [
   { p: 0.00, rad: 34, az: 0.10, pol: 1.30, disk: 0.28, foc: 1.75, heat: 0.15 }, // intro — establish, far & calm
-  { p: 0.17, rad: 24, az: 0.50, pol: 1.24, disk: 0.55, foc: 1.62, heat: 0.40 }, // what is it — push in to examine
-  { p: 0.33, rad: 11, az: 0.95, pol: 1.12, disk: 0.68, foc: 1.95, heat: 0.55 }, // horizon — dive to the shadow's edge
-  { p: 0.50, rad: 18, az: 1.60, pol: 1.50, disk: 1.00, foc: 1.55, heat: 1.00 }, // disk — swing edge-on as it ignites
-  { p: 0.67, rad: 22, az: 2.10, pol: 0.95, disk: 0.95, foc: 1.60, heat: 0.85 }, // strength — high 3/4 look-down
-  { p: 0.83, rad: 30, az: 2.60, pol: 1.24, disk: 0.68, foc: 1.55, heat: 0.60 }, // catalogue — pull back so cards read
-  { p: 1.00, rad: 40, az: 3.20, pol: 1.30, disk: 0.85, foc: 1.50, heat: 0.70 }, // outro — pull away, leaving
+  { p: 0.11, rad: 24, az: 0.45, pol: 1.24, disk: 0.55, foc: 1.62, heat: 0.40 }, // what is it — push in to examine
+  { p: 0.22, rad: 11, az: 0.95, pol: 1.12, disk: 0.68, foc: 1.95, heat: 0.55 }, // horizon — dive to the shadow's edge
+  { p: 0.33, rad: 18, az: 1.55, pol: 1.50, disk: 1.00, foc: 1.55, heat: 1.00 }, // disk — swing edge-on as it ignites
+  { p: 0.44, rad: 22, az: 2.05, pol: 0.95, disk: 0.95, foc: 1.60, heat: 0.85 }, // strength — high 3/4 look-down
+  { p: 0.56, rad: 30, az: 2.45, pol: 1.28, disk: 0.58, foc: 1.55, heat: 0.55 }, // scale — pull back, calm behind the viz
+  { p: 0.67, rad: 16, az: 2.90, pol: 1.14, disk: 0.90, foc: 1.70, heat: 0.80 }, // fall-in — close & dramatic
+  { p: 0.78, rad: 26, az: 3.30, pol: 1.30, disk: 0.70, foc: 1.55, heat: 0.60 }, // merger — wide
+  { p: 0.89, rad: 32, az: 3.70, pol: 1.24, disk: 0.58, foc: 1.50, heat: 0.55 }, // catalog — pull back so cards read
+  { p: 1.00, rad: 42, az: 4.10, pol: 1.30, disk: 0.85, foc: 1.50, heat: 0.70 }, // outro — pull away, leaving
 ];
 function smoothstep(a, b, x) { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); }
 function sampleKeys(p) {
@@ -478,6 +481,362 @@ function initLightLab(background) {
   window.addEventListener("resize", () => { if (!overlay.hidden) layout(); });
 }
 
+/* ---------------- scale comparison ---------------- */
+function initScale() {
+  const canvas = document.getElementById("scale-canvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const stepsEl = document.getElementById("scaleSteps");
+  const blurbEl = document.getElementById("scaleBlurb");
+
+  const STEPS = [
+    { key: "Sun",
+      big: { label: "The Sun", d: 1.39e6, dl: "1.39 million km", bh: false },
+      small: { label: "Earth", d: 12742, dl: "12,742 km", bh: false, blue: true },
+      blurb: "Our Sun is 109 Earths wide — and just an ordinary star." },
+    { key: "Stellar black hole",
+      big: { label: "The Sun", d: 1.39e6, dl: "1.39 million km", bh: false },
+      small: { label: "10-solar-mass black hole", d: 60, dl: "~60 km", bh: true },
+      blurb: "Collapse a giant star and you get a black hole barely 60 km across — a speck beside the Sun, yet far heavier." },
+    { key: "Sagittarius A*",
+      big: { label: "Sagittarius A*", d: 2.5e7, dl: "~25 million km", bh: true },
+      small: { label: "The Sun", d: 1.39e6, dl: "1.39 million km", bh: false },
+      blurb: "Our galaxy's black hole is about 17 Suns wide — it would sit comfortably inside Mercury's orbit." },
+    { key: "M87*",
+      big: { label: "M87*", d: 3.83e10, dl: "~38 billion km", bh: true },
+      small: { label: "Neptune's orbit", d: 9.0e9, dl: "~9 billion km (60 AU)", bh: false, blue: true },
+      blurb: "M87* is wider than our entire solar system — light itself needs days just to cross it." },
+  ];
+
+  let W = 0, H = 0, dpr = 1, idx = 0, anim = 0, raf = 0;
+
+  function layout() {
+    dpr = Math.min(window.devicePixelRatio, 2);
+    W = canvas.clientWidth; H = canvas.clientHeight;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function orb(x, y, r, o, t) {
+    r = Math.max(r, o.bh ? 3 : 2.5);
+    if (o.bh) {
+      // glow halo first, then opaque black on top (so the interior stays black)
+      const gl = ctx.createRadialGradient(x, y, r, x, y, r * 1.4);
+      gl.addColorStop(0, `rgba(255,170,90,${0.3 * t})`); gl.addColorStop(1, "rgba(255,170,90,0)");
+      ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(x, y, r * 1.4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#000";
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+      ctx.lineWidth = Math.max(1.3, r * 0.05);
+      ctx.strokeStyle = `rgba(255,180,110,${0.95 * t})`;
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
+    } else {
+      const c = o.blue ? [110, 180, 255] : [255, 210, 130];
+      const g = ctx.createRadialGradient(x - r * 0.3, y - r * 0.3, r * 0.1, x, y, r);
+      g.addColorStop(0, `rgba(${c[0]+30},${c[1]+30},${c[2]},${t})`);
+      g.addColorStop(1, `rgba(${c[0]},${c[1]},${c[2]},${t})`);
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+
+  function label(x, y, name, dl, t) {
+    ctx.globalAlpha = t; ctx.textAlign = "center";
+    ctx.fillStyle = "rgba(255,255,255,0.92)"; ctx.font = "600 13px Inter, sans-serif";
+    ctx.fillText(name, x, y); ctx.fillStyle = "rgba(150,158,172,1)"; ctx.font = "300 12px Inter, sans-serif";
+    ctx.fillText(dl, x, y + 17); ctx.globalAlpha = 1;
+  }
+
+  function render() {
+    layout();
+    ctx.clearRect(0, 0, W, H);
+    const s = STEPS[idx], cy = H * 0.44;
+    const R = Math.min(H * 0.34, W * 0.26);
+    const ratio = s.small.d / s.big.d;
+    const sr = R * ratio;
+    const bx = W * 0.36, sx = W * 0.74;
+
+    // big object
+    orb(bx, cy, R, s.big, 1);
+    label(bx, cy + R + 26, s.big.label, s.big.dl, 1);
+    // small object (animated scale-in)
+    orb(sx, cy, sr * anim, s.small, anim);
+    label(sx, cy + R + 26, s.small.label, s.small.dl, anim);
+
+    // ratio annotation
+    const times = s.big.d / s.small.d;
+    const tstr = times >= 1000 ? Math.round(times / 1000) + ",000×" : (times >= 100 ? Math.round(times) + "×" : times.toFixed(times < 10 ? 1 : 0) + "×");
+    ctx.globalAlpha = anim; ctx.textAlign = "center";
+    ctx.fillStyle = "rgba(255,170,90,0.9)"; ctx.font = "500 13px Inter, sans-serif";
+    ctx.fillText(`${tstr} wider`, (bx + sx) / 2, cy - R - 8);
+    ctx.globalAlpha = 1;
+  }
+
+  function tick() {
+    anim = Math.min(1, anim + 0.06);
+    render();
+    if (anim < 1) raf = requestAnimationFrame(tick);
+  }
+  function select(i) {
+    idx = i; anim = 0;
+    blurbEl.textContent = STEPS[i].blurb;
+    [...stepsEl.children].forEach((b, k) => b.classList.toggle("active", k === i));
+    cancelAnimationFrame(raf); tick();
+  }
+
+  STEPS.forEach((s, i) => {
+    const b = document.createElement("button");
+    b.className = "scale-step"; b.textContent = s.key;
+    b.addEventListener("click", () => select(i));
+    stepsEl.appendChild(b);
+  });
+  window.addEventListener("resize", render);
+  // reveal-triggered first play
+  if ("IntersectionObserver" in window) {
+    let played = false;
+    new IntersectionObserver((es) => es.forEach((e) => {
+      if (e.isIntersecting && !played) { played = true; select(0); }
+    }), { threshold: 0.3 }).observe(canvas);
+  }
+  select(0);
+}
+
+/* ---------------- fall-in (dive) overlay ---------------- */
+function initDive(background) {
+  const overlay = document.getElementById("overlay-dive");
+  const canvas = document.getElementById("dive-canvas");
+  const tint = document.getElementById("diveTint");
+  const capEl = document.getElementById("diveCaption");
+  const youEl = document.getElementById("clockYou");
+  const outEl = document.getElementById("clockOut");
+  const replay = document.getElementById("diveReplay");
+  let dive = null, start = 0, lastT = 0, outAccum = 0, done = false;
+
+  const CAPTIONS = [
+    [0.0, "You begin your fall toward the black hole."],
+    [2.2, "The accretion disk blazes past. Starlight bends into a ring around the dark."],
+    [4.6, "Time itself slows — to the outside universe, you appear to freeze at the edge."],
+    [7.2, "You cross the event horizon: the point of no return."],
+    [8.9, "Outside, the universe winks out. No signal you send will ever escape."],
+  ];
+  const DUR = 9.8;
+  const es = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+
+  function frameHook(target) {
+    if (done) return;                                     // freeze on the final (black) frame
+    const now = performance.now() / 1000, t = now - start;
+    const dt = Math.min(0.1, Math.max(0, t - lastT)); lastT = t;
+
+    // Camera stays in the visually rich zone (disk + lensing) most of the fall,
+    // bottoming out at ~3.2 RS; the *crossing* is conveyed by the redshift/fade.
+    target.rad = Math.max(3.2, 30 - 26.8 * es(0, 8.4, t));
+    target.foc = 1.6 + 0.72 * es(1, 8.2, t);
+    target.disk = 0.3 + 0.7 * es(0, 2.6, t);
+    target.heat = 0.4 + 0.6 * es(0, 2.6, t);
+    target.pol = 1.35 - 0.16 * es(0, 8, t);
+    target.az = 0.3 + 0.5 * t + 2.4 * es(6, 9, t);        // swirl accelerates near the horizon
+
+    // Time dilation uses a separate radius that truly approaches the horizon,
+    // so the distant-observer clock diverges toward infinity.
+    const rr = Math.max(1.002, 30 - 28.98 * es(0, 9.3, t));
+    const gamma = 1 / Math.sqrt(1 - 1 / rr);
+    outAccum += dt * gamma;
+    youEl.textContent = t.toFixed(1) + " s";
+    outEl.textContent = t > 8.8 ? "∞" : (outAccum < 1e4 ? outAccum.toFixed(1) + " s" : Math.round(outAccum).toLocaleString() + " s");
+
+    let cap = CAPTIONS[0][1];
+    for (const [tt, c] of CAPTIONS) if (t >= tt) cap = c;
+    if (capEl.textContent !== cap) capEl.textContent = cap;
+
+    const red = es(3.2, 8.6, t), black = es(8.6, 9.6, t);
+    tint.style.opacity = 1;
+    tint.style.background = `radial-gradient(ellipse at center, rgba(120,25,25,${0.3 * red}) 22%, rgba(40,0,0,${0.6 * red}) 66%, rgba(0,0,0,${Math.min(1, black + 0.35 * red)}) 100%)`;
+
+    if (t >= DUR && !done) { done = true; replay.hidden = false; }
+  }
+
+  function reset() {
+    start = performance.now() / 1000; lastT = 0; outAccum = 0; done = false;
+    replay.hidden = true; capEl.textContent = CAPTIONS[0][1];
+    tint.style.opacity = 0;
+    if (dive) dive.jumpTo({ rad: 30, az: 0.3, pol: 1.35, disk: 0.3, foc: 1.6, heat: 0.4 });
+  }
+  function open() {
+    overlay.hidden = false; overlay.setAttribute("aria-hidden", "false");
+    lockScroll(true); background.paused = true;
+    if (!dive) dive = createBlackHole(canvas, { ease: 0.28, onFrame: frameHook });
+    reset();
+    requestAnimationFrame(() => { overlay.classList.add("show"); dive.resize(); dive.paused = false; });
+  }
+  function close() {
+    overlay.classList.remove("show");
+    if (dive) dive.paused = true;
+    background.paused = false; lockScroll(false);
+    setTimeout(() => { overlay.hidden = true; overlay.setAttribute("aria-hidden", "true"); }, 380);
+  }
+
+  document.querySelectorAll('[data-open="dive"]').forEach((b) => b.addEventListener("click", open));
+  overlay.querySelector("[data-close]").addEventListener("click", close);
+  replay.addEventListener("click", reset);
+  document.addEventListener("keydown", (e) => { if (!overlay.hidden && e.key === "Escape") close(); });
+}
+
+/* ---------------- black-hole merger + gravitational-wave sound ---------------- */
+function initMerger(background) {
+  const overlay = document.getElementById("overlay-merger");
+  const canvas = document.getElementById("merger-canvas");
+  const ctx = canvas.getContext("2d");
+  const capEl = document.getElementById("mergerCaption");
+  const playBtn = document.getElementById("mergerPlay");
+
+  let W = 0, H = 0, dpr = 1, raf = 0, running = false;
+  let stars = [], ripples = [], angle = 0, lastT = 0, t0 = 0, playing = false, flashed = false;
+  let audio = null;
+  const INSPIRAL = 4.8, RING = 2.2, TOTAL = INSPIRAL + RING;
+
+  const CAPS = [
+    [0.0, "Two black holes, 1.3 billion light-years away."],
+    [0.6, "Locked in a death spiral, circling faster and faster…"],
+    [INSPIRAL - 0.15, "They merge — releasing a storm of gravitational waves."],
+    [INSPIRAL + 0.4, "A single black hole remains, ringing like a struck bell."],
+    [TOTAL - 0.2, "That ripple reached Earth on 14 September 2015."],
+  ];
+
+  function layout() {
+    dpr = Math.min(window.devicePixelRatio, 2);
+    W = canvas.clientWidth; H = canvas.clientHeight;
+    canvas.width = W * dpr; canvas.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (!stars.length) for (let i = 0; i < 170; i++) stars.push([Math.random(), Math.random(), Math.random() * 0.55 + 0.3]);
+  }
+  const CX = () => W / 2, CY = () => H * 0.46;
+  const unit = () => Math.min(W, H);
+
+  function drawBH(x, y, r) {
+    const gl = ctx.createRadialGradient(x, y, r, x, y, r * 1.8);
+    gl.addColorStop(0, "rgba(255,170,90,0.28)"); gl.addColorStop(1, "rgba(255,170,90,0)");
+    ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(x, y, r * 1.8, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#000"; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    ctx.lineWidth = Math.max(1.2, r * 0.12); ctx.strokeStyle = "rgba(255,185,120,0.9)";
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
+  }
+
+  function draw(t) {
+    ctx.clearRect(0, 0, W, H);
+    // stars
+    ctx.fillStyle = "#fff";
+    for (const s of stars) { ctx.globalAlpha = s[2] * 0.7; ctx.beginPath(); ctx.arc(s[0] * W, s[1] * H, 0.9, 0, Math.PI * 2); ctx.fill(); }
+    ctx.globalAlpha = 1;
+
+    const cx = CX(), cy = CY(), u = unit();
+    const inspiral = t < INSPIRAL;
+    const p = inspiral ? t / INSPIRAL : 1;
+    const sep = inspiral ? (0.26 * u) * Math.pow(1 - p, 0.42) + 0.045 * u : 0;
+    const rBH = 0.05 * u;
+
+    // gravitational-wave ripples
+    for (const rp of ripples) { rp.r += rp.v; rp.a *= 0.975; }
+    ripples = ripples.filter((rp) => rp.a > 0.03 && rp.r < Math.hypot(W, H));
+    for (const rp of ripples) {
+      ctx.strokeStyle = `rgba(150,190,255,${rp.a * 0.5})`; ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.arc(cx, cy, rp.r, 0, Math.PI * 2); ctx.stroke();
+    }
+
+    if (inspiral) {
+      // two black holes orbiting the common centre
+      drawBH(cx + Math.cos(angle) * sep, cy + Math.sin(angle) * sep, rBH);
+      drawBH(cx + Math.cos(angle + Math.PI) * sep, cy + Math.sin(angle + Math.PI) * sep, rBH);
+    } else {
+      if (!flashed) {
+        flashed = true;
+        ripples.push({ r: sep + rBH, v: 9, a: 1 }, { r: rBH, v: 6, a: 1 });
+      }
+      // merger flash + single ringing black hole
+      const rt = (t - INSPIRAL) / RING;
+      const flash = Math.max(0, 1 - rt * 5);
+      if (flash > 0) { ctx.fillStyle = `rgba(255,240,220,${flash * 0.9})`; ctx.fillRect(0, 0, W, H); }
+      const wob = 1 + 0.18 * Math.sin(t * 34) * Math.exp(-rt * 4);
+      drawBH(cx, cy, rBH * 1.4 * wob);
+    }
+  }
+
+  function spawnRipplesFromOrbit() {
+    // emit a ripple twice per orbit (gravitational waves are 2× the orbital frequency)
+    if (angle - (spawnRipplesFromOrbit.last || 0) >= Math.PI) {
+      spawnRipplesFromOrbit.last = angle;
+      ripples.push({ r: unit() * 0.05, v: 3.2, a: 0.9 });
+    }
+  }
+
+  function loop() {
+    const now = performance.now() / 1000;
+    let t = playing ? now - t0 : 0;
+    const dt = Math.min(0.05, Math.max(0, now - lastT)); lastT = now;
+
+    if (playing && t < INSPIRAL) {
+      const sep = 0.26 * unit() * Math.pow(1 - t / INSPIRAL, 0.42) + 0.045 * unit();
+      angle += dt * (2.2 + 40 / (sep + 12));   // orbital speed rises as they close in
+      spawnRipplesFromOrbit();
+    }
+
+    let cap = CAPS[0][1];
+    if (playing) for (const [tt, c] of CAPS) if (t >= tt) cap = c;
+    if (capEl.textContent !== cap) capEl.textContent = cap;
+
+    draw(playing ? t : 0);
+
+    if (playing && t >= TOTAL) { playing = false; playBtn.hidden = false; playBtn.textContent = "↺ Play again"; }
+    raf = requestAnimationFrame(loop);
+  }
+
+  function playAudio() {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      audio = new AC();
+      const now = audio.currentTime;
+      const gain = audio.createGain();
+      gain.connect(audio.destination);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.28, now + INSPIRAL);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + TOTAL);
+      [1, 0.5].forEach((mult, i) => {                 // fundamental + one octave down
+        const o = audio.createOscillator();
+        o.type = "sine";
+        o.frequency.setValueAtTime(38 * mult, now);
+        o.frequency.exponentialRampToValueAtTime(260 * mult, now + INSPIRAL);
+        o.frequency.exponentialRampToValueAtTime(180 * mult, now + TOTAL); // ringdown settles
+        const g = audio.createGain(); g.gain.value = i === 0 ? 1 : 0.5;
+        o.connect(g); g.connect(gain);
+        o.start(now); o.stop(now + TOTAL + 0.1);
+      });
+    } catch (e) { /* audio optional */ }
+  }
+
+  function play() {
+    playBtn.hidden = true; playing = true; flashed = false; ripples = []; angle = 0;
+    spawnRipplesFromOrbit.last = 0;
+    t0 = performance.now() / 1000;
+    playAudio();
+  }
+  function open() {
+    overlay.hidden = false; overlay.setAttribute("aria-hidden", "false");
+    lockScroll(true); background.paused = true;
+    playing = false; playBtn.hidden = false; playBtn.textContent = "▸ Play the merger";
+    capEl.textContent = CAPS[0][1];
+    requestAnimationFrame(() => { overlay.classList.add("show"); layout(); lastT = performance.now() / 1000; if (!running) { running = true; loop(); } });
+  }
+  function close() {
+    overlay.classList.remove("show");
+    running = false; cancelAnimationFrame(raf);
+    if (audio) { try { audio.close(); } catch (e) {} audio = null; }
+    playing = false; background.paused = false; lockScroll(false);
+    setTimeout(() => { overlay.hidden = true; overlay.setAttribute("aria-hidden", "true"); }, 380);
+  }
+
+  document.querySelectorAll('[data-open="merger"]').forEach((b) => b.addEventListener("click", open));
+  playBtn.addEventListener("click", play);
+  overlay.querySelector("[data-close]").addEventListener("click", close);
+  window.addEventListener("resize", () => { if (!overlay.hidden) layout(); });
+  document.addEventListener("keydown", (e) => { if (!overlay.hidden && e.key === "Escape") close(); });
+}
+
 /* ---------------- scroll UI ---------------- */
 function initUI() {
   const bar = document.getElementById("scrollProgress");
@@ -514,6 +873,9 @@ function boot() {
   }
   initExplorer(background);
   initLightLab(background);
+  initScale();
+  initDive(background);
+  initMerger(background);
 }
 
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);

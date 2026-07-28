@@ -13,6 +13,7 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
+[hidden] { display: none !important; }   /* ensure the attribute wins over .cta display */
 html { scroll-behavior: smooth; }
 body {
   background: #000;
@@ -184,6 +185,56 @@ main { position: relative; z-index: 2; }
 .bh-photo { margin-top: 1.5rem; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; max-width: 320px; }
 .bh-photo img { display: block; width: 100%; height: auto; }
 .bh-photo figcaption { font-size: 0.72rem; color: var(--faint); padding: 0.55rem 0.8rem; border-top: 1px solid var(--line); }
+
+/* ---------- Scale comparison ---------- */
+.scale-stage { position: relative; margin: 2.2rem auto 1.4rem; max-width: 760px; }
+.scale-stage::before {
+  content: ""; position: absolute; inset: -30px -10px; z-index: -1; pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.5) 55%, rgba(0,0,0,0) 80%);
+}
+#scale-canvas { width: 100%; height: 340px; display: block; }
+.scale-blurb {
+  margin: 0.6rem auto 0; max-width: 52ch; min-height: 3.2em;
+  font-size: 1rem; font-weight: 300; color: var(--dim); text-align: center;
+}
+.scale-steps { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; margin-top: 0.8rem; }
+.scale-step {
+  cursor: pointer; pointer-events: auto; font-family: inherit; font-size: 0.85rem; color: var(--dim);
+  background: rgba(255,255,255,0.05); border: 1px solid var(--line); border-radius: 999px; padding: 0.5rem 1.1rem;
+  transition: background 0.25s, color 0.25s, border-color 0.25s;
+}
+.scale-step:hover { background: rgba(255,255,255,0.12); color: var(--white); }
+.scale-step.active { background: var(--white); color: #000; border-color: var(--white); }
+
+/* ---------- Fall-in (dive) overlay ---------- */
+.dive-stage { position: relative; width: 100%; height: 100%; overflow: hidden; }
+#dive-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.dive-tint { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 40%, rgba(120,0,0,0) 100%); opacity: 0; }
+.dive-hud { position: absolute; left: 0; right: 0; bottom: 0; padding: clamp(1.4rem, 5vh, 3rem); pointer-events: none;
+  background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%); text-align: center; }
+.dive-clocks { display: flex; gap: 3rem; justify-content: center; margin-bottom: 1rem; }
+.dive-num { display: block; font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 600; font-variant-numeric: tabular-nums; }
+.dive-lbl { display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--faint); }
+.dive-caption { font-size: clamp(1.05rem, 2.2vw, 1.4rem); font-weight: 300; color: var(--white); min-height: 1.6em;
+  max-width: 40ch; margin: 0 auto; transition: opacity 0.5s; }
+.dive-replay { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: auto; }
+
+/* ---------- Merger overlay ---------- */
+.merger-stage { position: relative; width: 100%; height: 100%; overflow: hidden; }
+#merger-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.merger-hud { position: absolute; left: 0; right: 0; bottom: 0; padding: clamp(1.4rem, 5vh, 3rem); text-align: center;
+  pointer-events: none; background: linear-gradient(0deg, rgba(0,0,0,0.82) 0%, transparent 100%); }
+.merger-hud > * { pointer-events: auto; }
+.merger-caption { font-size: clamp(1.05rem, 2.2vw, 1.45rem); font-weight: 300; color: var(--white); max-width: 44ch;
+  margin: 0 auto 1.2rem; min-height: 1.6em; }
+.merger-note { margin: 1.1rem auto 0; max-width: 60ch; font-size: 0.9rem; font-weight: 300;
+  line-height: 1.6; color: var(--dim); }
+.merger-note strong { color: var(--white); font-weight: 600; }
+
+@media (max-width: 620px) {
+  .dive-clocks { gap: 1.6rem; }
+  #scale-canvas { height: 280px; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; scroll-behavior: auto; }

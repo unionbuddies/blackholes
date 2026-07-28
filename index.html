@@ -16,8 +16,11 @@
   <div class="vignette" aria-hidden="true"></div>
   <div class="scroll-progress" id="scrollProgress"></div>
 
-  <!-- Chapter navigation (dots injected by script.js) -->
-  <nav class="chapter-nav" id="chapterNav" aria-label="Chapters"></nav>
+  <!-- Chapter navigation -->
+  <button class="nav-toggle" id="navToggle" aria-haspopup="true" aria-expanded="false" aria-controls="navMenu">
+    <span class="nav-toggle-icon" aria-hidden="true">☰</span> Chapters
+  </button>
+  <nav class="nav-menu" id="navMenu" aria-label="Chapters" hidden><!-- items injected by script.js --></nav>
 
   <!-- Loading state until the 3D is ready -->
   <div class="loader" id="loader"><div class="loader-orb"></div><span class="loader-text">entering orbit…</span></div>

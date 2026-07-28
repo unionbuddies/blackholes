@@ -1153,31 +1153,46 @@ function initUI() {
 
 /* ---------------- chapter navigation ---------------- */
 function initChapterNav() {
-  const nav = document.getElementById("chapterNav");
-  if (!nav) return;
+  const toggle = document.getElementById("navToggle");
+  const menu = document.getElementById("navMenu");
+  if (!toggle || !menu) return;
   const scenes = [...document.querySelectorAll("main .scene")];
   const labels = ["Intro", "What it is", "Origins", "Event horizon", "Disk of fire",
-    "Anatomy", "The experiment", "Scale", "Fall in", "Collision", "The long goodbye", "Catalog", "Fin"];
-  const dots = scenes.map((sc, i) => {
+    "Anatomy", "The experiment", "Scale", "Fall in", "Collision", "The long goodbye", "Catalog", "Finish"];
+  const nums = ["", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", ""];
+
+  const items = scenes.map((sc, i) => {
     const b = document.createElement("button");
-    b.className = "chapter-dot";
-    b.setAttribute("aria-label", labels[i] || "Section " + (i + 1));
-    b.innerHTML = `<span class="lbl">${labels[i] || ""}</span>`;
-    b.addEventListener("click", () => sc.scrollIntoView({ behavior: "smooth", block: "start" }));
-    nav.appendChild(b);
+    b.className = "nav-item";
+    b.innerHTML = `<span class="num">${nums[i]}</span><span>${labels[i]}</span>`;
+    b.addEventListener("click", () => { sc.scrollIntoView({ behavior: "smooth", block: "start" }); setOpen(false); });
+    menu.appendChild(b);
     return b;
   });
+
+  let open = false;
+  function setOpen(v) {
+    open = v;
+    toggle.setAttribute("aria-expanded", v ? "true" : "false");
+    if (v) { menu.hidden = false; requestAnimationFrame(() => menu.classList.add("open")); }
+    else { menu.classList.remove("open"); setTimeout(() => { if (!open) menu.hidden = true; }, 220); }
+  }
+  menu.hidden = true;
+  toggle.addEventListener("click", (e) => { e.stopPropagation(); setOpen(!open); });
+  document.addEventListener("click", (e) => { if (open && !menu.contains(e.target) && e.target !== toggle) setOpen(false); });
+  document.addEventListener("keydown", (e) => { if (open && e.key === "Escape") setOpen(false); });
+
   if ("IntersectionObserver" in window) {
     const io = new IntersectionObserver((entries) => {
       entries.forEach((e) => {
         if (e.isIntersecting) {
           const idx = scenes.indexOf(e.target);
-          dots.forEach((d, i) => d.classList.toggle("active", i === idx));
+          items.forEach((it, i) => it.classList.toggle("active", i === idx));
         }
       });
     }, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
     scenes.forEach((s) => io.observe(s));
-  } else dots[0].classList.add("active");
+  } else items[0].classList.add("active");
 }
 
 /* ---------------- boot ---------------- */

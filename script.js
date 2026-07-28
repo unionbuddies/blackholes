@@ -608,6 +608,7 @@ function initDive(background) {
   const youEl = document.getElementById("clockYou");
   const outEl = document.getElementById("clockOut");
   const replay = document.getElementById("diveReplay");
+  const foot = document.getElementById("diveFoot");
   let dive = null, start = 0, lastT = 0, outAccum = 0, done = false;
 
   const CAPTIONS = [
@@ -650,12 +651,12 @@ function initDive(background) {
     tint.style.opacity = 1;
     tint.style.background = `radial-gradient(ellipse at center, rgba(120,25,25,${0.3 * red}) 22%, rgba(40,0,0,${0.6 * red}) 66%, rgba(0,0,0,${Math.min(1, black + 0.35 * red)}) 100%)`;
 
-    if (t >= DUR && !done) { done = true; replay.hidden = false; }
+    if (t >= DUR && !done) { done = true; replay.hidden = false; foot.hidden = false; }
   }
 
   function reset() {
     start = performance.now() / 1000; lastT = 0; outAccum = 0; done = false;
-    replay.hidden = true; capEl.textContent = CAPTIONS[0][1];
+    replay.hidden = true; foot.hidden = true; capEl.textContent = CAPTIONS[0][1];
     tint.style.opacity = 0;
     if (dive) dive.jumpTo({ rad: 30, az: 0.3, pol: 1.35, disk: 0.3, foc: 1.6, heat: 0.4 });
   }

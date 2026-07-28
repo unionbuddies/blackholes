@@ -218,6 +218,9 @@ main { position: relative; z-index: 2; }
 .dive-caption { font-size: clamp(1.05rem, 2.2vw, 1.4rem); font-weight: 300; color: var(--white); min-height: 1.6em;
   max-width: 40ch; margin: 0 auto; transition: opacity 0.5s; }
 .dive-replay { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: auto; }
+/* keep it centred on hover (don't let .cta's translateY override the centering) */
+.dive-replay:hover { transform: translate(-50%, calc(-50% - 2px)); }
+.dive-foot { margin: 0.9rem auto 0; max-width: 52ch; font-size: 0.9rem; font-weight: 300; color: var(--dim); line-height: 1.5; }
 
 /* ---------- Merger overlay ---------- */
 .merger-stage { position: relative; width: 100%; height: 100%; overflow: hidden; }

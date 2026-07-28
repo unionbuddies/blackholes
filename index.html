@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Black Holes</title>
+  <meta name="description" content="A cinematic, interactive journey around a black hole — what they are, an experiment showing light being swallowed, and the real black holes that matter, each in its own stage." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Fixed WebGL stage: one continuous black hole for the whole scroll -->
+  <canvas id="stage"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="scroll-progress" id="scrollProgress"></div>
+
+  <main>
+    <!-- 01 · INTRO -->
+    <section class="scene scene--center" data-scene="0">
+      <div class="panel panel--hero">
+        <h1 class="hero-title">BLACK&nbsp;HOLES</h1>
+        <p class="hero-sub">Regions of space where gravity becomes absolute.</p>
+        <div class="scroll-cue" aria-hidden="true"><span>scroll</span><i>↓</i></div>
+      </div>
+    </section>
+
+    <!-- 02 · WHAT IS IT -->
+    <section class="scene scene--left" data-scene="1">
+      <div class="panel">
+        <span class="kicker">01</span>
+        <h2>What is a black hole?</h2>
+        <p>
+          A black hole is a region of space where gravity pulls so hard that
+          nothing can escape it. It forms when a huge amount of matter is crushed
+          into an incredibly small space. Not even light — the fastest thing in
+          existence — can break free once it falls too close.
+        </p>
+      </div>
+    </section>
+
+    <!-- 03 · EVENT HORIZON -->
+    <section class="scene scene--right" data-scene="2">
+      <div class="panel">
+        <span class="kicker">02</span>
+        <h2>The point of no return</h2>
+        <p>
+          The event horizon is the edge of a black hole. Cross it, and there is no
+          path back out — every direction leads inward. It is the boundary of a
+          region the universe hides from us completely.
+        </p>
+      </div>
+    </section>
+
+    <!-- 04 · ACCRETION DISK -->
+    <section class="scene scene--left" data-scene="3">
+      <div class="panel">
+        <span class="kicker">03</span>
+        <h2>A disk of fire</h2>
+        <p>
+          Gas and dust falling toward a black hole spiral into a flat, blazing
+          disk. Friction heats this matter to millions of degrees until it glows.
+          The black hole's gravity then bends that light, wrapping the disk into a
+          halo around the dark.
+        </p>
+      </div>
+    </section>
+
+    <!-- 05 · HOW STRONG (light experiment CTA) -->
+    <section class="scene scene--center" data-scene="4">
+      <div class="panel panel--hero">
+        <span class="kicker">04 · The experiment</span>
+        <h2>How strong is a black hole?</h2>
+        <p class="hero-sub">
+          Strong enough to trap light itself. Fire a beam past one and watch what
+          happens — aim too close, and it can never leave. See it for yourself.
+        </p>
+        <button class="cta" data-open="light">▸ Launch the light experiment</button>
+      </div>
+    </section>
+
+    <!-- 06 · EXPLORER -->
+    <section class="scene scene--center" data-scene="5">
+      <div class="panel panel--full">
+        <span class="kicker">05 · The catalog</span>
+        <h2>Black holes worth knowing</h2>
+        <p class="hero-sub hero-sub--tight">
+          From the giant at our galaxy's heart to the silent one next door. Open
+          any of them to explore it in its own stage.
+        </p>
+        <div class="bh-grid" id="bhGrid"><!-- cards injected by script.js --></div>
+      </div>
+    </section>
+
+    <!-- 07 · OUTRO -->
+    <section class="scene scene--center" data-scene="6">
+      <div class="panel panel--hero">
+        <h2 class="outro-title">No longer theory.</h2>
+        <p class="hero-sub">
+          Predicted by Einstein a century ago — and now photographed for real.
+          The nearest ones are, cosmically speaking, right in our backyard.
+        </p>
+        <p class="credits">
+          Real imagery: EHT Collaboration / ESO (CC&nbsp;BY&nbsp;4.0) · Live visualizations:
+          real-time gravitational lensing rendered in WebGL.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ LIGHT EXPERIMENT OVERLAY ============ -->
+  <div class="overlay" id="overlay-light" hidden aria-hidden="true">
+    <button class="overlay-close" data-close aria-label="Close">✕</button>
+    <div class="light-stage">
+      <canvas id="light-canvas"></canvas>
+      <div class="light-ui">
+        <div class="light-head">
+          <span class="kicker">The experiment</span>
+          <h2>Fire light at a black hole</h2>
+          <p>
+            Each beam travels in a straight line — until the black hole's gravity
+            bends it. <strong>Click anywhere</strong> to fire, or drag to sweep.
+            Aim near the center and watch light fall in and never return.
+          </p>
+        </div>
+        <div class="light-controls">
+          <div class="light-legend">
+            <span><i class="dot dot--escape"></i> Escaped</span>
+            <span><i class="dot dot--orbit"></i> Skimmed the edge</span>
+            <span><i class="dot dot--capture"></i> Swallowed</span>
+          </div>
+          <div class="light-bottom">
+            <div class="light-stats">
+              <div><span class="num" id="statEscaped">0</span><span class="lbl">escaped</span></div>
+              <div><span class="num" id="statCaptured">0</span><span class="lbl">swallowed</span></div>
+            </div>
+            <button class="cta cta--ghost" id="lightReset">Clear beams</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ BLACK-HOLE DETAIL OVERLAY ============ -->
+  <div class="overlay" id="overlay-bh" hidden aria-hidden="true">
+    <button class="overlay-close" data-close aria-label="Close">✕</button>
+    <button class="overlay-nav overlay-nav--prev" data-nav="-1" aria-label="Previous">‹</button>
+    <button class="overlay-nav overlay-nav--next" data-nav="1" aria-label="Next">›</button>
+    <div class="bh-stage">
+      <canvas id="bh-canvas"></canvas>
+      <div class="bh-detail">
+        <span class="bh-type" id="bhType"></span>
+        <h2 class="bh-name" id="bhName"></h2>
+        <div class="bh-stats" id="bhStats"></div>
+        <p class="bh-sig" id="bhSig"></p>
+        <figure class="bh-photo" id="bhPhoto" hidden>
+          <img id="bhPhotoImg" src="" alt="" />
+          <figcaption id="bhPhotoCap"></figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <script type="importmap">
+  { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+  </script>
+  <script type="module" src="script.js"></script>
+</body>
+</html>

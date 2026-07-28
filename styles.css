@@ -207,6 +207,10 @@ main { position: relative; z-index: 2; }
 .scale-step.active { background: var(--white); color: #000; border-color: var(--white); }
 
 /* ---------- Hawking / evaporation ---------- */
+.hawk-explain { max-width: 62ch; margin: 1.1rem auto 0; text-align: center; }
+.hawk-explain p { font-size: clamp(1rem, 1.5vw, 1.14rem); font-weight: 300; color: var(--dim); margin-bottom: 0.85rem; }
+.hawk-explain p:last-child { margin-bottom: 0; }
+.hawk-explain strong { color: var(--white); font-weight: 500; }
 .hawk-stage { position: relative; margin: 2rem auto 1rem; max-width: 840px; display: grid;
   grid-template-columns: 1fr 1fr; gap: clamp(1rem, 3vw, 2.4rem); align-items: center; }
 .hawk-stage::before {

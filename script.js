@@ -512,10 +512,16 @@ function initHawking() {
     active = i; lifeEl.textContent = MASSES[i].life; descEl.textContent = MASSES[i].desc;
     [...stepsEl.children].forEach((b, k) => b.classList.toggle("active", k === i));
   }
-  function spawn(cx, cy, rH, n, burst) {
+  // a virtual pair born at the horizon: one escapes (radiation), one falls in
+  function spawnPair(cx, cy, rH) {
+    const a = Math.random() * Math.PI * 2, c = Math.cos(a), s = Math.sin(a), sp = 0.5 + Math.random() * 0.6;
+    parts.push({ x: cx + c * rH, y: cy + s * rH, vx: c * sp, vy: s * sp, a: 1, dir: "out" });
+    parts.push({ x: cx + c * rH, y: cy + s * rH, vx: -c * sp * 0.85, vy: -s * sp * 0.85, a: 1, dir: "in" });
+  }
+  function burst(cx, cy, rH, n) {
     for (let i = 0; i < n; i++) {
-      const a = Math.random() * Math.PI * 2, sp = (burst ? 2.5 + Math.random() * 3 : 0.4 + Math.random() * 0.7);
-      parts.push({ x: cx + Math.cos(a) * rH, y: cy + Math.sin(a) * rH, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, a: 1, w: Math.random() > 0.5 });
+      const a = Math.random() * Math.PI * 2, c = Math.cos(a), s = Math.sin(a), sp = 2.5 + Math.random() * 3;
+      parts.push({ x: cx + c * rH, y: cy + s * rH, vx: c * sp, vy: s * sp, a: 1, dir: "out" });
     }
   }
   function draw() {
@@ -523,16 +529,20 @@ function initHawking() {
     ctx.clearRect(0, 0, W, H);
     const cx = W * 0.5, cy = H * 0.5, m = MASSES[active], rH = Math.min(W, H) * m.r;
 
-    // steady Hawking emission
-    if (Math.random() < m.rate) spawn(cx, cy, rH + 2, 1, false);
+    // steady Hawking emission: virtual pairs at the horizon
+    if (Math.random() < m.rate) spawnPair(cx, cy, rH + 1);
     // final-burst "pop" for the mountain-mass hole
-    if (m.pop && frame % 240 === 0) { pop = 1; spawn(cx, cy, rH + 2, 40, true); }
+    if (m.pop && frame % 240 === 0) { pop = 1; burst(cx, cy, rH + 1, 40); }
     pop *= 0.92;
 
-    for (const p of parts) { p.x += p.vx; p.y += p.vy; p.a *= 0.972; }
+    for (const p of parts) {
+      p.x += p.vx; p.y += p.vy; p.a *= 0.975;
+      if (p.dir === "in" && Math.hypot(p.x - cx, p.y - cy) < rH * 0.6) p.a = 0; // swallowed
+    }
     parts = parts.filter((p) => p.a > 0.04);
     for (const p of parts) {
-      ctx.globalAlpha = p.a; ctx.fillStyle = p.w ? "#eaf0ff" : "#ffd9a8";
+      ctx.globalAlpha = Math.max(0, p.a) * (p.dir === "in" ? 0.55 : 1);
+      ctx.fillStyle = p.dir === "in" ? "#ff9a5a" : "#dbe8ff";  // escapes = cool light, falls in = warm
       ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, 6.29); ctx.fill();
     }
     ctx.globalAlpha = 1;

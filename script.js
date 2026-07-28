@@ -899,64 +899,59 @@ function initDive(background) {
   const capEl = document.getElementById("diveCaption");
   const youEl = document.getElementById("clockYou");
   const outEl = document.getElementById("clockOut");
-  const replay = document.getElementById("diveReplay");
   const foot = document.getElementById("diveFoot");
-  let dive = null, start = 0, lastT = 0, outAccum = 0, done = false;
+  const prevBtn = document.getElementById("divePrev");
+  const nextBtn = document.getElementById("diveNext");
+  let dive = null, stage = 0;
 
-  const CAPTIONS = [
-    [0.0, "You begin your fall toward the black hole."],
-    [2.2, "The accretion disk blazes past. Starlight bends into a ring around the dark."],
-    [4.6, "Time itself slows — to the outside universe, you appear to freeze at the edge."],
-    [7.2, "You cross the event horizon: the point of no return."],
-    [8.9, "Outside, the universe winks out. No signal you send will ever escape."],
+  // Each stage sets a camera pose + mood; the renderer eases into it, then holds
+  // until the user clicks Next. Clocks are illustrative snapshots per stage.
+  const STAGES = [
+    { cap: "You begin your fall toward the black hole.",
+      view: { rad: 30, foc: 1.6, disk: 0.35, heat: 0.45, pol: 1.35, az: 0.30 }, red: 0, black: 0, stretch: 1, you: "0.0 s", out: "0.0 s" },
+    { cap: "The accretion disk blazes past. Starlight bends into a ring around the dark.",
+      view: { rad: 19, foc: 1.9, disk: 1.0, heat: 1.0, pol: 1.5, az: 0.95 }, red: 0.08, black: 0, stretch: 1, you: "1.2 s", out: "1.4 s" },
+    { cap: "Time itself slows — to the outside universe, you appear to freeze at the edge.",
+      view: { rad: 11, foc: 2.05, disk: 0.95, heat: 0.9, pol: 1.2, az: 1.55 }, red: 0.28, black: 0, stretch: 1, you: "2.5 s", out: "48 s" },
+    { cap: "You cross the event horizon: the point of no return.",
+      view: { rad: 5.5, foc: 2.2, disk: 0.9, heat: 0.85, pol: 1.16, az: 2.15 }, red: 0.55, black: 0, stretch: 1.04, you: "3.4 s", out: "8,200 s" },
+    { cap: "Tidal gravity now pulls your feet far harder than your head — stretching you thin. This is spaghettification.",
+      view: { rad: 4.2, foc: 2.3, disk: 0.85, heat: 0.8, pol: 1.12, az: 2.6 }, red: 0.82, black: 0.12, stretch: 1.5, you: "4.1 s", out: "∞" },
+    { cap: "Drawn into a thread toward the singularity, you are torn apart — as the outside universe winks out for good.",
+      view: { rad: 3.4, foc: 2.4, disk: 0.8, heat: 0.75, pol: 1.1, az: 3.05 }, red: 0.5, black: 1, stretch: 1.9, you: "4.6 s", out: "∞", foot: true },
   ];
-  const DUR = 9.8;
-  const es = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  const LAST = STAGES.length - 1;
+  const cur = { red: 0, black: 0, stretch: 1 }, tgt = { red: 0, black: 0, stretch: 1 };
 
-  function frameHook(target) {
-    if (done) return;                                     // freeze on the final (black) frame
-    const now = performance.now() / 1000, t = now - start;
-    const dt = Math.min(0.1, Math.max(0, t - lastT)); lastT = t;
-
-    // Camera stays in the visually rich zone (disk + lensing) most of the fall,
-    // bottoming out at ~3.2 RS; the *crossing* is conveyed by the redshift/fade.
-    target.rad = Math.max(3.2, 30 - 26.8 * es(0, 8.4, t));
-    target.foc = 1.6 + 0.72 * es(1, 8.2, t);
-    target.disk = 0.3 + 0.7 * es(0, 2.6, t);
-    target.heat = 0.4 + 0.6 * es(0, 2.6, t);
-    target.pol = 1.35 - 0.16 * es(0, 8, t);
-    target.az = 0.3 + 0.5 * t + 2.4 * es(6, 9, t);        // swirl accelerates near the horizon
-
-    // Time dilation uses a separate radius that truly approaches the horizon,
-    // so the distant-observer clock diverges toward infinity.
-    const rr = Math.max(1.002, 30 - 28.98 * es(0, 9.3, t));
-    const gamma = 1 / Math.sqrt(1 - 1 / rr);
-    outAccum += dt * gamma;
-    youEl.textContent = t.toFixed(1) + " s";
-    outEl.textContent = t > 8.8 ? "∞" : (outAccum < 1e4 ? outAccum.toFixed(1) + " s" : Math.round(outAccum).toLocaleString() + " s");
-
-    let cap = CAPTIONS[0][1];
-    for (const [tt, c] of CAPTIONS) if (t >= tt) cap = c;
-    if (capEl.textContent !== cap) capEl.textContent = cap;
-
-    const red = es(3.2, 8.6, t), black = es(8.6, 9.6, t);
+  // eases the visual mood toward the current stage's target every frame
+  function frameHook() {
+    cur.red += (tgt.red - cur.red) * 0.08;
+    cur.black += (tgt.black - cur.black) * 0.08;
+    cur.stretch += (tgt.stretch - cur.stretch) * 0.08;
     tint.style.opacity = 1;
-    tint.style.background = `radial-gradient(ellipse at center, rgba(120,25,25,${0.3 * red}) 22%, rgba(40,0,0,${0.6 * red}) 66%, rgba(0,0,0,${Math.min(1, black + 0.35 * red)}) 100%)`;
-
-    if (t >= DUR && !done) { done = true; replay.hidden = false; foot.hidden = false; }
+    tint.style.background = `radial-gradient(ellipse at center, rgba(120,25,25,${0.3 * cur.red}) 22%, rgba(40,0,0,${0.6 * cur.red}) 66%, rgba(0,0,0,${Math.min(1, cur.black + 0.35 * cur.red)}) 100%)`;
+    canvas.style.transform = `scaleY(${cur.stretch})`;
   }
 
-  function reset() {
-    start = performance.now() / 1000; lastT = 0; outAccum = 0; done = false;
-    replay.hidden = true; foot.hidden = true; capEl.textContent = CAPTIONS[0][1];
-    tint.style.opacity = 0;
-    if (dive) dive.jumpTo({ rad: 30, az: 0.3, pol: 1.35, disk: 0.3, foc: 1.6, heat: 0.4 });
+  function goto(s) {
+    stage = s;
+    const st = STAGES[s];
+    if (dive) dive.setTarget(st.view);
+    tgt.red = st.red; tgt.black = st.black; tgt.stretch = st.stretch;
+    capEl.textContent = st.cap;
+    youEl.textContent = st.you; outEl.textContent = st.out;
+    foot.hidden = !st.foot;
+    prevBtn.hidden = s === 0;
+    nextBtn.textContent = s >= LAST ? "↺ Replay" : "Next →";
   }
+
   function open() {
     overlay.hidden = false; overlay.setAttribute("aria-hidden", "false");
     lockScroll(true); background.paused = true;
-    if (!dive) dive = createBlackHole(canvas, { ease: 0.28, onFrame: frameHook });
-    reset();
+    if (!dive) dive = createBlackHole(canvas, { ease: 0.06, onFrame: frameHook });
+    Object.assign(cur, { red: 0, black: 0, stretch: 1 });   // start clean at stage 0
+    dive.jumpTo(STAGES[0].view);
+    goto(0);
     requestAnimationFrame(() => { overlay.classList.add("show"); dive.resize(); dive.paused = false; });
   }
   function close() {
@@ -968,8 +963,14 @@ function initDive(background) {
 
   document.querySelectorAll('[data-open="dive"]').forEach((b) => b.addEventListener("click", open));
   overlay.querySelector("[data-close]").addEventListener("click", close);
-  replay.addEventListener("click", reset);
-  document.addEventListener("keydown", (e) => { if (!overlay.hidden && e.key === "Escape") close(); });
+  nextBtn.addEventListener("click", () => goto(stage >= LAST ? 0 : stage + 1));
+  prevBtn.addEventListener("click", () => goto(Math.max(0, stage - 1)));
+  document.addEventListener("keydown", (e) => {
+    if (overlay.hidden) return;
+    if (e.key === "Escape") close();
+    else if (e.key === "ArrowRight" && stage < LAST) goto(stage + 1);
+    else if (e.key === "ArrowLeft") goto(Math.max(0, stage - 1));
+  });
 }
 
 /* ---------------- black-hole merger + gravitational-wave sound ---------------- */

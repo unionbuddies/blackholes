@@ -273,9 +273,7 @@ main { position: relative; z-index: 2; }
 .dive-lbl { display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--faint); }
 .dive-caption { font-size: clamp(1.05rem, 2.2vw, 1.4rem); font-weight: 300; color: var(--white); min-height: 1.6em;
   max-width: 40ch; margin: 0 auto; transition: opacity 0.5s; }
-.dive-replay { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: auto; }
-/* keep it centred on hover (don't let .cta's translateY override the centering) */
-.dive-replay:hover { transform: translate(-50%, calc(-50% - 2px)); }
+.dive-nav { display: flex; gap: 0.8rem; justify-content: center; align-items: center; margin-top: 1.1rem; pointer-events: auto; }
 .dive-foot { margin: 0.9rem auto 0; max-width: 52ch; font-size: 0.9rem; font-weight: 300; color: var(--dim); line-height: 1.5; }
 
 /* ---------- Merger overlay ---------- */

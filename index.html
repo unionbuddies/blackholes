@@ -40,10 +40,26 @@
       </div>
     </section>
 
+    <!-- BIRTH -->
+    <section class="scene scene--center" data-scene="11">
+      <div class="panel panel--full">
+        <span class="kicker">02 · Origins</span>
+        <h2>How a black hole is born</h2>
+        <div class="birth-stage">
+          <canvas id="birth-canvas"></canvas>
+          <p class="birth-caption" id="birthCaption"></p>
+        </div>
+        <div class="birth-nav">
+          <button class="cta" id="birthPrev" hidden>← Prev</button>
+          <button class="cta" id="birthReplay">Next →</button>
+        </div>
+      </div>
+    </section>
+
     <!-- 03 · EVENT HORIZON -->
     <section class="scene scene--right" data-scene="2">
       <div class="panel">
-        <span class="kicker">02</span>
+        <span class="kicker">03</span>
         <h2>The point of no return</h2>
         <p>
           The event horizon is the edge of a black hole. Cross it, and there is no
@@ -56,7 +72,7 @@
     <!-- 04 · ACCRETION DISK -->
     <section class="scene scene--left" data-scene="3">
       <div class="panel">
-        <span class="kicker">03</span>
+        <span class="kicker">04</span>
         <h2>A disk of fire</h2>
         <p>
           Gas and dust falling toward a black hole spiral into a flat, blazing
@@ -67,10 +83,29 @@
       </div>
     </section>
 
-    <!-- 05 · HOW STRONG (light experiment CTA) -->
+    <!-- ANATOMY -->
+    <section class="scene scene--center" data-scene="10">
+      <div class="panel panel--full">
+        <span class="kicker">05 · Anatomy</span>
+        <h2>Anatomy of a black hole</h2>
+        <p class="hero-sub hero-sub--tight">
+          Every black hole is built from the same few parts. Tap each one to explore it.
+        </p>
+        <div class="anat-stage">
+          <canvas id="anat-canvas"></canvas>
+          <div class="anat-info">
+            <h3 id="anatName">The event horizon</h3>
+            <p id="anatDesc"></p>
+          </div>
+        </div>
+        <div class="anat-parts" id="anatParts"></div>
+      </div>
+    </section>
+
+    <!-- 06 · HOW STRONG (light experiment CTA) -->
     <section class="scene scene--center" data-scene="4">
       <div class="panel panel--hero">
-        <span class="kicker">04 · The experiment</span>
+        <span class="kicker">06 · The experiment</span>
         <h2>How strong is a black hole?</h2>
         <p class="hero-sub">
           Strong enough to trap light itself. Fire a beam past one and watch what
@@ -83,7 +118,7 @@
     <!-- 06 · SCALE -->
     <section class="scene scene--center" data-scene="5">
       <div class="panel panel--full">
-        <span class="kicker">05 · How big?</span>
+        <span class="kicker">07 · How big?</span>
         <h2>The scale of the abyss</h2>
         <p class="hero-sub hero-sub--tight">
           Black holes range from smaller than a city to wider than the solar
@@ -100,7 +135,7 @@
     <!-- 07 · FALL IN -->
     <section class="scene scene--center" data-scene="6">
       <div class="panel panel--hero">
-        <span class="kicker">06 · The crossing</span>
+        <span class="kicker">08 · The crossing</span>
         <h2>What if you fell in?</h2>
         <p class="hero-sub">
           Plunge toward the event horizon. The stars swirl into a ring, the light
@@ -113,7 +148,7 @@
     <!-- 08 · MERGER -->
     <section class="scene scene--center" data-scene="7">
       <div class="panel panel--hero">
-        <span class="kicker">07 · Collision</span>
+        <span class="kicker">09 · Collision</span>
         <h2>When black holes collide</h2>
         <p class="hero-sub">
           In 2015 we heard two black holes merge — a ripple in spacetime itself.
@@ -123,10 +158,31 @@
       </div>
     </section>
 
-    <!-- 09 · EXPLORER -->
+    <!-- HAWKING / DEATH -->
+    <section class="scene scene--center" data-scene="12">
+      <div class="panel panel--full">
+        <span class="kicker">10 · The long goodbye</span>
+        <h2>Do black holes last forever?</h2>
+        <p class="hero-sub hero-sub--tight">
+          Nothing escapes a black hole — except, very slowly, itself. Quantum
+          effects at the horizon make it glow with faint "Hawking radiation,"
+          bleeding away mass until, eventually, it vanishes.
+        </p>
+        <div class="hawk-stage">
+          <canvas id="hawk-canvas"></canvas>
+          <div class="hawk-info">
+            <div class="hawk-life"><span class="hawk-num" id="hawkLife"></span><span class="hawk-lbl">to evaporate</span></div>
+            <p class="hawk-desc" id="hawkDesc"></p>
+          </div>
+        </div>
+        <div class="hawk-steps" id="hawkSteps"></div>
+      </div>
+    </section>
+
+    <!-- 11 · EXPLORER -->
     <section class="scene scene--center" data-scene="8">
       <div class="panel panel--full">
-        <span class="kicker">08 · The catalog</span>
+        <span class="kicker">11 · The catalog</span>
         <h2>Black holes worth knowing</h2>
         <p class="hero-sub hero-sub--tight">
           From the giant at our galaxy's heart to the silent one next door. Open

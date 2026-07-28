@@ -191,16 +191,19 @@ function createBlackHole(canvas, opts = {}) {
 
 /* ---------------- scroll keyframes (purposeful camera) ---------------- */
 const KEYS = [
-  { p: 0.00, rad: 34, az: 0.10, pol: 1.30, disk: 0.28, foc: 1.75, heat: 0.15 }, // intro — establish, far & calm
-  { p: 0.11, rad: 24, az: 0.45, pol: 1.24, disk: 0.55, foc: 1.62, heat: 0.40 }, // what is it — push in to examine
-  { p: 0.22, rad: 11, az: 0.95, pol: 1.12, disk: 0.68, foc: 1.95, heat: 0.55 }, // horizon — dive to the shadow's edge
-  { p: 0.33, rad: 18, az: 1.55, pol: 1.50, disk: 1.00, foc: 1.55, heat: 1.00 }, // disk — swing edge-on as it ignites
-  { p: 0.44, rad: 22, az: 2.05, pol: 0.95, disk: 0.95, foc: 1.60, heat: 0.85 }, // strength — high 3/4 look-down
-  { p: 0.56, rad: 30, az: 2.45, pol: 1.28, disk: 0.58, foc: 1.55, heat: 0.55 }, // scale — pull back, calm behind the viz
-  { p: 0.67, rad: 16, az: 2.90, pol: 1.14, disk: 0.90, foc: 1.70, heat: 0.80 }, // fall-in — close & dramatic
-  { p: 0.78, rad: 26, az: 3.30, pol: 1.30, disk: 0.70, foc: 1.55, heat: 0.60 }, // merger — wide
-  { p: 0.89, rad: 32, az: 3.70, pol: 1.24, disk: 0.58, foc: 1.50, heat: 0.55 }, // catalog — pull back so cards read
-  { p: 1.00, rad: 42, az: 4.10, pol: 1.30, disk: 0.85, foc: 1.50, heat: 0.70 }, // outro — pull away, leaving
+  { p: 0.000, rad: 34, az: 0.10, pol: 1.30, disk: 0.28, foc: 1.75, heat: 0.15 }, // intro — far & calm
+  { p: 0.083, rad: 26, az: 0.40, pol: 1.24, disk: 0.52, foc: 1.66, heat: 0.40 }, // what is it — push in
+  { p: 0.167, rad: 24, az: 0.72, pol: 1.22, disk: 0.55, foc: 1.60, heat: 0.50 }, // birth — steady behind the animation
+  { p: 0.250, rad: 11, az: 1.10, pol: 1.12, disk: 0.68, foc: 1.95, heat: 0.55 }, // horizon — dive to the shadow's edge
+  { p: 0.333, rad: 18, az: 1.60, pol: 1.50, disk: 1.00, foc: 1.55, heat: 1.00 }, // disk — edge-on as it ignites
+  { p: 0.417, rad: 30, az: 2.00, pol: 1.26, disk: 0.60, foc: 1.55, heat: 0.55 }, // anatomy — pull back, calm
+  { p: 0.500, rad: 22, az: 2.40, pol: 0.98, disk: 0.95, foc: 1.60, heat: 0.85 }, // strength — high 3/4 look-down
+  { p: 0.583, rad: 32, az: 2.80, pol: 1.28, disk: 0.55, foc: 1.50, heat: 0.50 }, // scale — pull back behind the viz
+  { p: 0.667, rad: 15, az: 3.20, pol: 1.14, disk: 0.90, foc: 1.70, heat: 0.80 }, // fall-in — close & dramatic
+  { p: 0.750, rad: 26, az: 3.60, pol: 1.30, disk: 0.70, foc: 1.55, heat: 0.60 }, // merger — wide
+  { p: 0.833, rad: 34, az: 3.95, pol: 1.24, disk: 0.50, foc: 1.50, heat: 0.50 }, // hawking — distant, contemplative
+  { p: 0.917, rad: 34, az: 4.25, pol: 1.24, disk: 0.55, foc: 1.50, heat: 0.52 }, // catalog — pulled back so cards read
+  { p: 1.000, rad: 42, az: 4.60, pol: 1.30, disk: 0.82, foc: 1.50, heat: 0.70 }, // outro — pull away, leaving
 ];
 function smoothstep(a, b, x) { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); }
 function sampleKeys(p) {
@@ -479,6 +482,285 @@ function initLightLab(background) {
   overlay.querySelector("[data-close]").addEventListener("click", close);
   document.addEventListener("keydown", (e) => { if (!overlay.hidden && e.key === "Escape") close(); });
   window.addEventListener("resize", () => { if (!overlay.hidden) layout(); });
+}
+
+/* ---------------- Hawking evaporation ---------------- */
+function initHawking() {
+  const canvas = document.getElementById("hawk-canvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const stepsEl = document.getElementById("hawkSteps");
+  const lifeEl = document.getElementById("hawkLife");
+  const descEl = document.getElementById("hawkDesc");
+
+  const MASSES = [
+    { key: "Mountain-mass", life: "~14 billion yrs", r: 0.15, rate: 0.9, pop: true,
+      desc: "A black hole the mass of a mountain (~10¹¹ kg) is evaporating right now — its final moment a burst of gamma rays. That lifetime is about the current age of the universe." },
+    { key: "Stellar (10 Suns)", life: "~10⁷⁰ yrs", r: 0.28, rate: 0.22, pop: false,
+      desc: "A star-sized black hole fades so slowly it will outlast every star in the cosmos — roughly 10⁷⁰ years to disappear completely." },
+    { key: "Supermassive", life: "~10⁸⁷ yrs", r: 0.42, rate: 0.07, pop: false,
+      desc: "A giant like Sagittarius A* needs something like 10⁸⁷ years to evaporate — a span so vast that today's universe has barely begun." },
+  ];
+  let W = 0, H = 0, dpr = 1, raf = 0, running = false, active = 1, parts = [], frame = 0, pop = 0;
+
+  function layout() {
+    dpr = Math.min(window.devicePixelRatio, 2);
+    W = canvas.clientWidth; H = canvas.clientHeight;
+    canvas.width = W * dpr; canvas.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  function selectM(i) {
+    active = i; lifeEl.textContent = MASSES[i].life; descEl.textContent = MASSES[i].desc;
+    [...stepsEl.children].forEach((b, k) => b.classList.toggle("active", k === i));
+  }
+  function spawn(cx, cy, rH, n, burst) {
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * Math.PI * 2, sp = (burst ? 2.5 + Math.random() * 3 : 0.4 + Math.random() * 0.7);
+      parts.push({ x: cx + Math.cos(a) * rH, y: cy + Math.sin(a) * rH, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, a: 1, w: Math.random() > 0.5 });
+    }
+  }
+  function draw() {
+    frame++;
+    ctx.clearRect(0, 0, W, H);
+    const cx = W * 0.5, cy = H * 0.5, m = MASSES[active], rH = Math.min(W, H) * m.r;
+
+    // steady Hawking emission
+    if (Math.random() < m.rate) spawn(cx, cy, rH + 2, 1, false);
+    // final-burst "pop" for the mountain-mass hole
+    if (m.pop && frame % 240 === 0) { pop = 1; spawn(cx, cy, rH + 2, 40, true); }
+    pop *= 0.92;
+
+    for (const p of parts) { p.x += p.vx; p.y += p.vy; p.a *= 0.972; }
+    parts = parts.filter((p) => p.a > 0.04);
+    for (const p of parts) {
+      ctx.globalAlpha = p.a; ctx.fillStyle = p.w ? "#eaf0ff" : "#ffd9a8";
+      ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, 6.29); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // black hole
+    if (pop > 0.02) { ctx.fillStyle = `rgba(255,240,210,${pop * 0.5})`; ctx.fillRect(0, 0, W, H); }
+    const gl = ctx.createRadialGradient(cx, cy, rH, cx, cy, rH * 1.7);
+    gl.addColorStop(0, "rgba(255,175,90,0.22)"); gl.addColorStop(1, "rgba(255,175,90,0)");
+    ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(cx, cy, rH * 1.7, 0, 6.29); ctx.fill();
+    ctx.fillStyle = "#000"; ctx.beginPath(); ctx.arc(cx, cy, rH, 0, 6.29); ctx.fill();
+    ctx.lineWidth = 1.6; ctx.strokeStyle = "rgba(255,190,120,0.85)";
+    ctx.beginPath(); ctx.arc(cx, cy, rH, 0, 6.29); ctx.stroke();
+
+    raf = requestAnimationFrame(draw);
+  }
+
+  MASSES.forEach((m, i) => {
+    const b = document.createElement("button");
+    b.className = "hawk-step"; b.textContent = m.key;
+    b.addEventListener("click", () => selectM(i));
+    stepsEl.appendChild(b);
+  });
+  window.addEventListener("resize", layout);
+  layout(); selectM(1);
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver((es) => es.forEach((e) => {
+      if (e.isIntersecting && !running) { running = true; layout(); draw(); }
+      else if (!e.isIntersecting && running) { running = false; cancelAnimationFrame(raf); }
+    }), { threshold: 0.25 }).observe(canvas);
+  } else { running = true; draw(); }
+}
+
+/* ---------------- birth animation ---------------- */
+function initBirth() {
+  const canvas = document.getElementById("birth-canvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const capEl = document.getElementById("birthCaption");
+  const btn = document.getElementById("birthReplay");
+  const prevBtn = document.getElementById("birthPrev");
+
+  let W = 0, H = 0, dpr = 1, raf = 0, running = false, seeded = false;
+  let stars = [], parts = [], boomed = false, stage = 0, stageT0 = 0;
+  const STAGES = [
+    "A star many times heavier than our Sun — burning fiercely, and living fast.",
+    "Its fuel spent, the core can no longer hold itself up. The star swells into a red supergiant.",
+    "In under a second the core collapses and rebounds — a supernova that briefly outshines a galaxy.",
+    "The blast clears. Where the star's core once was, a black hole remains.",
+  ];
+
+  function layout() {
+    dpr = Math.min(window.devicePixelRatio, 2);
+    W = canvas.clientWidth; H = canvas.clientHeight;
+    canvas.width = W * dpr; canvas.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (!seeded) { seeded = true; for (let i = 0; i < 150; i++) stars.push([Math.random(), Math.random(), Math.random() * 0.5 + 0.3]); }
+  }
+  const lerp = (a, b, x) => a + (b - a) * Math.min(1, Math.max(0, x));
+
+  function star(cx, cy, r, col) {
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 1.5);
+    g.addColorStop(0, `rgba(${col[0]},${col[1]},${col[2]},1)`);
+    g.addColorStop(0.6, `rgba(${col[0]},${col[1]},${col[2]},0.9)`);
+    g.addColorStop(1, `rgba(${col[0]},${col[1]},${col[2]},0)`);
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, r * 1.5, 0, 6.29); ctx.fill();
+  }
+  function blackhole(cx, cy, r, a) {
+    const gl = ctx.createRadialGradient(cx, cy, r, cx, cy, r * 1.8);
+    gl.addColorStop(0, `rgba(255,170,90,${0.3 * a})`); gl.addColorStop(1, "rgba(255,170,90,0)");
+    ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(cx, cy, r * 1.8, 0, 6.29); ctx.fill();
+    ctx.fillStyle = `rgba(0,0,0,${a})`; ctx.beginPath(); ctx.arc(cx, cy, r, 0, 6.29); ctx.fill();
+    ctx.lineWidth = 2; ctx.strokeStyle = `rgba(255,185,120,${a})`;
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, 6.29); ctx.stroke();
+  }
+  function boom(cx, cy) {
+    for (let i = 0; i < 150; i++) {
+      const a = Math.random() * Math.PI * 2, sp = 1.5 + Math.random() * 5.5;
+      parts.push({ x: cx, y: cy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, a: 1, h: Math.random() });
+    }
+  }
+
+  // Each stage plays a short transition, then holds until the user clicks "Next".
+  function draw(st) {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = "#fff";
+    for (const s of stars) { ctx.globalAlpha = s[2] * 0.6; ctx.beginPath(); ctx.arc(s[0] * W, s[1] * H, 0.9, 0, 6.29); ctx.fill(); }
+    ctx.globalAlpha = 1;
+    const cx = W / 2, cy = H / 2, R0 = Math.min(W, H) * 0.12, pulse = 1 + 0.02 * Math.sin(st * 2.5);
+
+    if (stage === 0) {
+      star(cx, cy, R0 * pulse, [200, 220, 255]);
+    } else if (stage === 1) {
+      const p = lerp(0, 1, st / 1.6);
+      star(cx, cy, R0 * (1 + 0.7 * p) * pulse, [255, lerp(210, 120, p), lerp(230, 70, p)]);
+    } else if (stage === 2) {
+      if (st < 0.5) {
+        star(cx, cy, Math.max(1, R0 * lerp(1.7, 0.05, (st / 0.5) ** 2)), [255, 150, 90]);
+      } else {
+        if (!boomed) { boomed = true; boom(cx, cy); }
+        const rt = st - 0.5;
+        const flash = Math.max(0, 1 - rt * 2.2);
+        if (flash > 0) { ctx.fillStyle = `rgba(255,245,225,${flash})`; ctx.fillRect(0, 0, W, H); }
+        const rr = rt * 150;
+        if (rr < Math.hypot(W, H)) {
+          ctx.strokeStyle = `rgba(255,190,120,${Math.max(0, 0.7 - rt * 0.35)})`; ctx.lineWidth = 3;
+          ctx.beginPath(); ctx.arc(cx, cy, rr, 0, 6.29); ctx.stroke();
+        }
+        for (const pt of parts) { pt.x += pt.vx; pt.y += pt.vy; pt.a *= 0.99; }
+        for (const pt of parts) {
+          ctx.globalAlpha = Math.max(0, pt.a); ctx.fillStyle = pt.h > 0.5 ? "#ffd9a0" : "#ff9a5a";
+          ctx.beginPath(); ctx.arc(pt.x, pt.y, 1.6, 0, 6.29); ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        // lingering hot core so the held frame isn't empty
+        const core = 0.32 + 0.22 * Math.sin(st * 3);
+        const cg = ctx.createRadialGradient(cx, cy, 0, cx, cy, R0 * 0.9);
+        cg.addColorStop(0, `rgba(255,220,170,${Math.max(0, core)})`); cg.addColorStop(1, "rgba(255,180,120,0)");
+        ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(cx, cy, R0 * 0.9, 0, 6.29); ctx.fill();
+      }
+    } else {
+      blackhole(cx, cy, R0 * 0.5, lerp(0, 1, st / 1.2));
+    }
+  }
+
+  function loop() { draw(performance.now() / 1000 - stageT0); raf = requestAnimationFrame(loop); }
+  const LAST = STAGES.length - 1;
+  function goto(s) {
+    stage = s; stageT0 = performance.now() / 1000;
+    if (stage === 2) { boomed = false; parts = []; }
+    capEl.textContent = STAGES[stage];
+    prevBtn.hidden = stage === 0;                 // no "Prev" on the first stage
+    btn.textContent = stage >= LAST ? "↺ Replay" : "Next →"; // last stage offers Replay, not Next
+  }
+  btn.addEventListener("click", () => goto(stage >= LAST ? 0 : stage + 1));
+  prevBtn.addEventListener("click", () => goto(Math.max(0, stage - 1)));
+  window.addEventListener("resize", layout);
+  layout(); goto(0);
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver((es) => es.forEach((e) => {
+      if (e.isIntersecting && !running) { running = true; loop(); }
+    }), { threshold: 0.3 }).observe(canvas);
+  } else { running = true; loop(); }
+}
+
+/* ---------------- anatomy diagram ---------------- */
+function initAnatomy() {
+  const canvas = document.getElementById("anat-canvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const partsEl = document.getElementById("anatParts");
+  const nameEl = document.getElementById("anatName");
+  const descEl = document.getElementById("anatDesc");
+
+  const PARTS = [
+    { key: "horizon", name: "Event horizon", desc: "The point of no return — the surface of the black hole. Cross it and no path leads back out; not even light can escape." },
+    { key: "singularity", name: "Singularity", desc: "The very center, where all the mass is crushed into a point of infinite density. Here our known laws of physics break down." },
+    { key: "photon", name: "Photon sphere", desc: "A thin shell where gravity is so strong that light itself can orbit the black hole before escaping or falling in." },
+    { key: "disk", name: "Accretion disk", desc: "Gas and dust spiralling inward, compressed and heated to millions of degrees until it blazes — often the only part we can see." },
+    { key: "ergosphere", name: "Ergosphere", desc: "Around a spinning black hole, space itself is dragged along. Inside this region you cannot stay still — you are forced to rotate with it." },
+  ];
+  let W = 0, H = 0, dpr = 1, active = "horizon";
+
+  function layout() {
+    dpr = Math.min(window.devicePixelRatio, 2);
+    W = canvas.clientWidth; H = canvas.clientHeight;
+    canvas.width = W * dpr; canvas.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  const dim = (k) => (active === k ? 1 : 0.3);
+
+  function diskArc(cx, cy, rH, a0, a1) {
+    ctx.globalAlpha = dim("disk"); ctx.lineWidth = rH * 0.5;
+    ctx.strokeStyle = active === "disk" ? "rgba(255,178,95,0.95)" : "rgba(255,150,80,0.85)";
+    if (active === "disk") { ctx.shadowColor = "rgba(255,160,70,0.8)"; ctx.shadowBlur = 18; }
+    ctx.beginPath(); ctx.ellipse(cx, cy, rH * 2.5, rH * 0.72, 0, a0, a1); ctx.stroke();
+    ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+  }
+  function draw() {
+    layout(); ctx.clearRect(0, 0, W, H);
+    const cx = W * 0.5, cy = H * 0.52, rH = Math.min(H * 0.17, W * 0.12);
+    const singOn = active === "singularity";
+
+    diskArc(cx, cy, rH, Math.PI, 2 * Math.PI);        // disk behind
+
+    // ergosphere (oblate, dashed)
+    ctx.globalAlpha = dim("ergosphere"); ctx.setLineDash([3, 5]); ctx.lineWidth = 1.5;
+    ctx.strokeStyle = active === "ergosphere" ? "rgba(150,190,255,0.95)" : "rgba(120,150,210,0.55)";
+    ctx.beginPath(); ctx.ellipse(cx, cy, rH * 1.95, rH * 1.28, 0, 0, 2 * Math.PI); ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+    // photon sphere (dashed circle)
+    ctx.globalAlpha = dim("photon"); ctx.setLineDash([2, 6]); ctx.lineWidth = 1.4;
+    ctx.strokeStyle = active === "photon" ? "rgba(255,232,185,0.95)" : "rgba(255,220,160,0.5)";
+    ctx.beginPath(); ctx.arc(cx, cy, rH * 1.5, 0, 2 * Math.PI); ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+    // event horizon (black body)
+    if (active === "horizon") { ctx.shadowColor = "rgba(255,190,120,0.9)"; ctx.shadowBlur = 22; }
+    ctx.globalAlpha = singOn ? 0.5 : 1;               // let the singularity show through
+    ctx.fillStyle = "#000"; ctx.beginPath(); ctx.arc(cx, cy, rH, 0, 2 * Math.PI); ctx.fill();
+    ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+    ctx.lineWidth = active === "horizon" ? 2.4 : 1.4;
+    ctx.strokeStyle = active === "horizon" ? "rgba(255,195,130,0.95)" : "rgba(255,255,255,0.3)";
+    ctx.beginPath(); ctx.arc(cx, cy, rH, 0, 2 * Math.PI); ctx.stroke();
+
+    diskArc(cx, cy, rH, 0, Math.PI);                  // disk front (over horizon)
+
+    // singularity marker (only when selected — otherwise hidden inside)
+    if (singOn) {
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rH * 0.55);
+      g.addColorStop(0, "rgba(255,255,255,0.95)"); g.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, rH * 0.55, 0, 2 * Math.PI); ctx.fill();
+      ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(cx, cy, 2.6, 0, 2 * Math.PI); ctx.fill();
+    }
+  }
+  function select(key) {
+    active = key;
+    const p = PARTS.find((x) => x.key === key);
+    nameEl.textContent = p.name; descEl.textContent = p.desc;
+    [...partsEl.children].forEach((b) => b.classList.toggle("active", b.dataset.k === key));
+    draw();
+  }
+  PARTS.forEach((p) => {
+    const b = document.createElement("button");
+    b.className = "anat-part"; b.textContent = p.name; b.dataset.k = p.key;
+    b.addEventListener("click", () => select(p.key));
+    partsEl.appendChild(b);
+  });
+  window.addEventListener("resize", draw);
+  select("horizon");
 }
 
 /* ---------------- scale comparison ---------------- */
@@ -875,6 +1157,9 @@ function boot() {
   initExplorer(background);
   initLightLab(background);
   initScale();
+  initAnatomy();
+  initBirth();
+  initHawking();
   initDive(background);
   initMerger(background);
 }

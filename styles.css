@@ -206,6 +206,58 @@ main { position: relative; z-index: 2; }
 .scale-step:hover { background: rgba(255,255,255,0.12); color: var(--white); }
 .scale-step.active { background: var(--white); color: #000; border-color: var(--white); }
 
+/* ---------- Hawking / evaporation ---------- */
+.hawk-stage { position: relative; margin: 2rem auto 1rem; max-width: 840px; display: grid;
+  grid-template-columns: 1fr 1fr; gap: clamp(1rem, 3vw, 2.4rem); align-items: center; }
+.hawk-stage::before {
+  content: ""; position: absolute; inset: -30px -10px; z-index: -1; pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.45) 58%, rgba(0,0,0,0) 82%);
+}
+#hawk-canvas { width: 100%; height: 300px; display: block; }
+.hawk-info { text-align: left; }
+.hawk-num { display: block; font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 700; color: var(--white); font-variant-numeric: tabular-nums; }
+.hawk-lbl { display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--faint); margin-bottom: 1rem; }
+.hawk-desc { font-size: 1rem; font-weight: 300; color: var(--dim); min-height: 6em; }
+.hawk-steps { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; margin-top: 0.6rem; }
+.hawk-step {
+  cursor: pointer; pointer-events: auto; font-family: inherit; font-size: 0.85rem; color: var(--dim);
+  background: rgba(255,255,255,0.05); border: 1px solid var(--line); border-radius: 999px; padding: 0.5rem 1.1rem;
+  transition: background 0.25s, color 0.25s, border-color 0.25s;
+}
+.hawk-step:hover { background: rgba(255,255,255,0.12); color: var(--white); }
+.hawk-step.active { background: var(--white); color: #000; border-color: var(--white); }
+
+/* ---------- Birth animation ---------- */
+.birth-stage { position: relative; margin: 2rem auto 1rem; max-width: 820px; }
+.birth-stage::before {
+  content: ""; position: absolute; inset: -30px -10px; z-index: -1; pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.5) 58%, rgba(0,0,0,0) 82%);
+}
+#birth-canvas { width: 100%; height: 360px; display: block; }
+.birth-caption { margin: 0.9rem auto 0; max-width: 54ch; min-height: 3em; font-size: 1.05rem;
+  font-weight: 300; color: var(--dim); text-align: center; }
+.birth-nav { display: flex; gap: 0.8rem; justify-content: center; align-items: center; }
+
+/* ---------- Anatomy diagram ---------- */
+.anat-stage { position: relative; margin: 2.2rem auto 1.2rem; max-width: 840px; display: grid;
+  grid-template-columns: 1.25fr 1fr; gap: clamp(1rem, 3vw, 2.4rem); align-items: center; }
+.anat-stage::before {
+  content: ""; position: absolute; inset: -30px -10px; z-index: -1; pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.45) 58%, rgba(0,0,0,0) 82%);
+}
+#anat-canvas { width: 100%; height: 320px; display: block; }
+.anat-info { text-align: left; }
+.anat-info h3 { font-size: 1.35rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--amber); }
+.anat-info p { font-size: 1rem; font-weight: 300; color: var(--dim); min-height: 5.5em; }
+.anat-parts { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; margin-top: 0.6rem; }
+.anat-part {
+  cursor: pointer; pointer-events: auto; font-family: inherit; font-size: 0.85rem; color: var(--dim);
+  background: rgba(255,255,255,0.05); border: 1px solid var(--line); border-radius: 999px; padding: 0.5rem 1.1rem;
+  transition: background 0.25s, color 0.25s, border-color 0.25s;
+}
+.anat-part:hover { background: rgba(255,255,255,0.12); color: var(--white); }
+.anat-part.active { background: var(--white); color: #000; border-color: var(--white); }
+
 /* ---------- Fall-in (dive) overlay ---------- */
 .dive-stage { position: relative; width: 100%; height: 100%; overflow: hidden; }
 #dive-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
@@ -234,6 +286,11 @@ main { position: relative; z-index: 2; }
   line-height: 1.6; color: var(--dim); }
 .merger-note strong { color: var(--white); font-weight: 600; }
 
+@media (max-width: 700px) {
+  .anat-stage, .hawk-stage { grid-template-columns: 1fr; }
+  .anat-info, .hawk-info { text-align: center; }
+  .anat-info p, .hawk-desc { min-height: 0; }
+}
 @media (max-width: 620px) {
   .dive-clocks { gap: 1.6rem; }
   #scale-canvas { height: 280px; }

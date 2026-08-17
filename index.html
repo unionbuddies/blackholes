@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Black Holes</title>
+  <link rel="icon" type="image/png" href="images/favicon.png" />
+  <link rel="apple-touch-icon" href="images/favicon.png" />
   <meta name="description" content="A cinematic, interactive journey around a black hole — what they are, an experiment showing light being swallowed, and the real black holes that matter, each in its own stage." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,6 +17,11 @@
   <canvas id="stage"></canvas>
   <div class="vignette" aria-hidden="true"></div>
   <div class="scroll-progress" id="scrollProgress"></div>
+
+  <!-- Space Bound logo -->
+  <a class="brand-logo" href="https://www.space-bound.org/" target="_blank" rel="noopener noreferrer" aria-label="Space Bound">
+    <img src="images/spacebound-logo.png" alt="Space Bound" />
+  </a>
 
   <!-- Chapter navigation -->
   <button class="nav-toggle" id="navToggle" aria-haspopup="true" aria-expanded="false" aria-controls="navMenu">
@@ -70,7 +77,7 @@
           <p class="birth-caption" id="birthCaption"></p>
         </div>
         <div class="birth-nav">
-          <button class="cta" id="birthPrev" hidden>← Prev</button>
+          <button class="cta nav-slot-hidden" id="birthPrev">← Prev</button>
           <button class="cta" id="birthReplay">Next →</button>
         </div>
       </div>
@@ -131,7 +138,7 @@
           Strong enough to trap light itself. Fire a beam past one and watch what
           happens — aim too close, and it can never leave. See it for yourself.
         </p>
-        <button class="cta" data-open="light">▸ Launch the light experiment</button>
+        <button class="cta" data-open="light"><span class="tri" aria-hidden="true">▸</span> Launch the light experiment</button>
       </div>
     </section>
 
@@ -161,7 +168,7 @@
           Plunge toward the event horizon. The stars swirl into a ring, the light
           reddens, your clock drifts from the outside world — and then, darkness.
         </p>
-        <button class="cta" data-open="dive">▸ Fall into the black hole</button>
+        <button class="cta" data-open="dive"><span class="tri" aria-hidden="true">▸</span> Fall into the black hole</button>
       </div>
     </section>
 
@@ -174,7 +181,7 @@
           In 2015 we heard two black holes merge — a ripple in spacetime itself.
           Watch them spiral in, and hear the "chirp" that won a Nobel Prize.
         </p>
-        <button class="cta" data-open="merger">▸ Play the collision</button>
+        <button class="cta" data-open="merger"><span class="tri" aria-hidden="true">▸</span> Play the collision</button>
       </div>
     </section>
 
@@ -315,7 +322,7 @@
           and freeze at the horizon forever — approaching it for infinite time, but never arriving.
         </p>
         <div class="dive-nav">
-          <button class="cta" id="divePrev" hidden>← Prev</button>
+          <button class="cta nav-slot-hidden" id="divePrev">← Prev</button>
           <button class="cta" id="diveNext">Next →</button>
         </div>
       </div>
@@ -329,7 +336,7 @@
       <canvas id="merger-canvas"></canvas>
       <div class="merger-hud">
         <div class="merger-caption" id="mergerCaption">Two black holes, 1.3 billion light-years away.</div>
-        <button class="cta" id="mergerPlay">▸ Play the merger</button>
+        <button class="cta" id="mergerPlay"><span class="tri" aria-hidden="true">▸</span> Play the merger</button>
         <p class="merger-note">
           This is <strong>GW150914</strong> — the first gravitational waves ever detected.
           Two black holes, about 36 and 29 times the Sun's mass, spiralled together and

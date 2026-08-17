@@ -1,0 +1,12 @@
+name = "blackholes"
+compatibility_date = "2025-07-31"
+workers_dev = true   # keep the *.workers.dev URL working alongside the custom domain
+
+# Custom domain (Cloudflare provisions DNS + SSL if the zone is in this account).
+routes = [
+  { pattern = "blackholes.space-bound.org", custom_domain = true }
+]
+
+# Static-assets-only Worker: serves the site files directly.
+[assets]
+directory = "."

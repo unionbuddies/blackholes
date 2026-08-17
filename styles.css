@@ -40,6 +40,15 @@ body.locked { overflow: hidden; }
   background: var(--white); opacity: 0.8; z-index: 40; transition: width 0.1s linear;
 }
 
+/* ---------- Brand logo ---------- */
+.brand-logo {
+  position: fixed; top: 12px; left: 14px; z-index: 46; display: block; line-height: 0;
+  opacity: 0.9; transition: opacity 0.25s var(--ease), transform 0.25s var(--ease);
+}
+.brand-logo:hover { opacity: 1; transform: scale(1.06); }
+.brand-logo img { width: 64px; height: auto; display: block; }
+@media (max-width: 640px) { .brand-logo img { width: 54px; } }
+
 /* ---------- Chapter navigation ---------- */
 .nav-toggle {
   position: fixed; top: 16px; right: 16px; z-index: 46; cursor: pointer;
@@ -149,6 +158,7 @@ main { position: relative; z-index: 2; }
 }
 .cta:hover { background: rgba(255,255,255,0.13); border-color: rgba(255,255,255,0.4); transform: translateY(-2px); }
 .cta--ghost { margin-top: 0; font-size: 0.82rem; padding: 0.6rem 1.1rem; }
+.cta .tri { font-size: 1.35em; line-height: 1; vertical-align: -0.06em; margin-right: 0.08em; }
 
 /* ---------- Explorer grid ---------- */
 .bh-grid {
@@ -293,6 +303,9 @@ main { position: relative; z-index: 2; }
 .birth-caption { margin: 0.9rem auto 0; max-width: 54ch; min-height: 3em; font-size: 1.05rem;
   font-weight: 300; color: var(--dim); text-align: center; }
 .birth-nav { display: flex; gap: 0.8rem; justify-content: center; align-items: center; }
+/* uniform-width nav buttons so Next/Replay never shift; Prev reserves its slot */
+.birth-nav .cta, .dive-nav .cta { min-width: 132px; text-align: center; }
+.nav-slot-hidden { visibility: hidden; pointer-events: none; }
 
 /* ---------- Anatomy diagram ---------- */
 .anat-stage { position: relative; margin: 2.2rem auto 1.2rem; max-width: 840px; display: grid;

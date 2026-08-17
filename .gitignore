@@ -3,3 +3,6 @@
 
 # Local tooling / preview config
 .claude/
+
+# Wrangler (Cloudflare) local cache/temp
+.wrangler/

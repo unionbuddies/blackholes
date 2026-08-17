@@ -672,8 +672,8 @@ function initBirth() {
     stage = s; stageT0 = performance.now() / 1000;
     if (stage === 2) { boomed = false; parts = []; }
     capEl.textContent = STAGES[stage];
-    prevBtn.hidden = stage === 0;                 // no "Prev" on the first stage
-    btn.textContent = stage >= LAST ? "↺ Replay" : "Next →"; // last stage offers Replay, not Next
+    prevBtn.classList.toggle("nav-slot-hidden", stage === 0);   // reserve Prev's slot on stage 0 so Next never moves
+    btn.textContent = stage >= LAST ? "↺ Replay" : "Next →";    // last stage offers Replay, not Next
   }
   btn.addEventListener("click", () => goto(stage >= LAST ? 0 : stage + 1));
   prevBtn.addEventListener("click", () => goto(Math.max(0, stage - 1)));
@@ -941,7 +941,7 @@ function initDive(background) {
     capEl.textContent = st.cap;
     youEl.textContent = st.you; outEl.textContent = st.out;
     foot.hidden = !st.foot;
-    prevBtn.hidden = s === 0;
+    prevBtn.classList.toggle("nav-slot-hidden", s === 0);   // reserve Prev's slot so Next stays put
     nextBtn.textContent = s >= LAST ? "↺ Replay" : "Next →";
   }
 
@@ -1112,7 +1112,7 @@ function initMerger(background) {
   function open() {
     overlay.hidden = false; overlay.setAttribute("aria-hidden", "false");
     lockScroll(true); background.paused = true;
-    playing = false; playBtn.hidden = false; playBtn.textContent = "▸ Play the merger";
+    playing = false; playBtn.hidden = false; playBtn.innerHTML = '<span class="tri" aria-hidden="true">▸</span> Play the merger';
     capEl.textContent = CAPS[0][1];
     requestAnimationFrame(() => { overlay.classList.add("show"); layout(); lastT = performance.now() / 1000; if (!running) { running = true; loop(); } });
   }
